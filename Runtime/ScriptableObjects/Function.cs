@@ -11,7 +11,7 @@ namespace VisualScript.Runtime.Functions
     [Icon("Packages/works.catsoft.visualscript-functions/Editor/Gizmos/GizmoFunction.png")]
 
     [Serializable]
-    public class Function : ScriptableObject, IRun, ISerializationCallbackReceiver
+    public class Function : ScriptableObject, IRun
     {
         // EXPOSED MEMBERS: -----------------------------------------------------------------------
 
@@ -20,6 +20,21 @@ namespace VisualScript.Runtime.Functions
         // MEMBERS: -------------------------------------------------------------------------------
 
         [NonSerialized] private IdString m_FunctionId;
+
+        // PROPERTIES: ----------------------------------------------------------------------------
+
+        private IdString FunctionId
+        {
+            get
+            {
+                if (this.m_FunctionId.IsEmpty)
+                {
+                    this.m_FunctionId = IdString.Unique;
+                }
+
+                return this.m_FunctionId;
+            }
+        }
 
         // EVENTS: --------------------------------------------------------------------------------
 
@@ -30,23 +45,18 @@ namespace VisualScript.Runtime.Functions
         public void Run(Args args)
         {
             this.EventRun?.Invoke();
-            this.m_Instructions.Run(args).Fire(null, this);
+            this.m_Instructions.Run(args, this.FunctionId).Fire(null, this);
         }
 
         public Awaitable Schedule(Args args)
         {
-            this.EventRun?.Invoke();
-            return this.m_Instructions.Run(args, this.m_FunctionId);
+            return this.Schedule(args, null);
         }
 
-        // SERIALIZATION CALLBACKS: ---------------------------------------------------------------
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
-        { }
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        public Awaitable Schedule(Args args, ICancelToken cancelToken)
         {
-            this.m_FunctionId = new IdString(this.GetEntityId());
+            this.EventRun?.Invoke();
+            return this.m_Instructions.Run(args, this.FunctionId, cancelToken);
         }
     }
 }

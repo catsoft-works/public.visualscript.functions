@@ -13,6 +13,9 @@ namespace VisualScript.Runtime.Functions
     [Parameter("Source", "The Source parameter passed to the Function")]
     [Parameter("Target", "The Target parameter passed to the Function")]
     [Parameter("Function", "The Function to execute")]
+    [Parameter("Await", "Whether to await until it finishes or not")]
+
+    [Note("An awaited Function stops when the caller is cancelled")]
 
     [Keywords("Call", "Execute")]
 
@@ -38,22 +41,21 @@ namespace VisualScript.Runtime.Functions
 
         protected override async Awaitable Run(Args args)
         {
-            Function function = this.m_Function.Get(args) as Function;
+            Function function = this.m_Function.Get<Function>(args);
             if (function == null) return;
 
             GameObject source = this.m_Source.Get(args);
             GameObject target = this.m_Target.Get(args);
 
             using Args functionArgs = Args.Get(source, target);
-            Awaitable awaitable = function.Schedule(functionArgs);
 
             if (this.m_Await)
             {
-                await awaitable;
+                await function.Schedule(functionArgs, this.ParentCancelToken);
             }
             else
             {
-                awaitable.Fire();
+                function.Schedule(functionArgs).Fire();
             }
         }
     }
