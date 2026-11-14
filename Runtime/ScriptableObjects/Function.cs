@@ -15,6 +15,8 @@ namespace VisualScript.Runtime.Functions
     {
         // EXPOSED MEMBERS: -----------------------------------------------------------------------
 
+        [SerializeField] private Note m_Note = new Note();
+
         [SerializeField] private RunnerInstructions m_Instructions = new RunnerInstructions();
 
         // MEMBERS: -------------------------------------------------------------------------------
@@ -22,6 +24,8 @@ namespace VisualScript.Runtime.Functions
         [NonSerialized] private IdString m_FunctionId;
 
         // PROPERTIES: ----------------------------------------------------------------------------
+
+        public Note Note => this.m_Note;
 
         private IdString FunctionId
         {
